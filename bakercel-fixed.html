@@ -89,9 +89,15 @@
     </div>
 
     <div id="orderButton">
-        <button class="btn" onclick="checkLocationAndPlaceOrder()">Place Order</button>
+            <button id="submitOrder" class="btn">Place Order</button>
     </div>
 
+    <button data-action="increment" data-item="pancakes">+</button>
+<button data-action="decrement" data-item="pancakes">-</button>
+
+    <p>Crypto Amount: <span id="cryptoAmount">0.0000</span> XMR</p>
+
+    
     <div id="errorMessage" class="error"></div>
     <div id="successMessage" class="success"></div>
 
