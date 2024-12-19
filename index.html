@@ -1,146 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Previous head section and styles remain the same -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bakercel - Order Pancakes & Tamales</title>
-    <!-- Previous styles remain the same -->
+    <title>Bakercel - Order Pancakes</title>
     <style>
-        /* Previous styles remain the same */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
         .product {
-            display: inline-block;
-            margin: 20px;
+            margin: 20px auto;
             padding: 20px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            width: 250px;
-        }
-        .product h2 {
-            margin-bottom: 10px;
-        }
-        .counter {
-            font-size: 18px;
-            margin-top: 10px;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        #orderButton {
-            margin-top: 30px;
-            font-size: 18px;
+            width: 300px;
         }
         .product img {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
         }
+        .counter {
+            font-size: 18px;
+            margin: 0 10px;
+        }
+        button {
+            padding: 5px 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #submitOrder {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        #submitOrder:hover {
+            background-color: #0056b3;
+        }
+        .error, .success {
+            margin: 10px 0;
+            padding: 10px;
+            display: none;
+        }
         .error {
             color: red;
-            margin: 10px 0;
-            display: none;
+            background-color: #ffe6e6;
         }
         .success {
             color: green;
-            margin: 10px 0;
-            display: none;
+            background-color: #e6ffe6;
         }
     </style>
 </head>
 <body>
     <h1>Welcome to Bakercel!</h1>
-    <p>Fresh baked goods delivered to your door!</p>
+    <p>Fresh pancakes delivered to your door!</p>
 
-    <!-- Previous product divs remain the same -->
     <div class="product">
         <h2>Pancakes</h2>
-        <img src="/api/placeholder/250/150" alt="Pancakes">
+        <img src="https://mojo.generalmills.com/api/public/content/Pw6SBIgi-Ee6pTZBpU1oBg_webp_base.webp?v=01633e4d&t=e724eca7b3c24a8aaa6e089ed9e611fd" alt="Pancakes">
         <p>$5 each</p>
-        <button onclick="updateCounter('pancakes', 1)">+</button>
+        <button onclick="updateCounter(-1)">-</button>
         <span class="counter" id="pancakesCount">0</span>
-        <button onclick="updateCounter('pancakes', -1)">-</button>
+        <button onclick="updateCounter(1)">+</button>
     </div>
 
-    <div class="product">
-        <h2>Tamales</h2>
-        <img src="/api/placeholder/250/150" alt="Tamales">
-        <p>$8 each</p>
-        <button onclick="updateCounter('tamales', 1)">+</button>
-        <span class="counter" id="tamalesCount">0</span>
-        <button onclick="updateCounter('tamales', -1)">-</button>
-    </div>
-
-    <div id="orderSummary" style="margin: 20px;">
+    <div id="orderSummary">
         <h3>Order Summary</h3>
         <p>Total: $<span id="totalAmount">0</span></p>
+        <p>Crypto Amount: <span id="cryptoAmount">0.0000</span> XMR</p>
     </div>
 
-    <div id="orderButton">
-            <button id="submitOrder" class="btn">Place Order</button>
-    </div>
+    <button id="submitOrder" onclick="checkLocationAndPlaceOrder()">Place Order</button>
 
-    <button data-action="increment" data-item="pancakes">+</button>
-<button data-action="decrement" data-item="pancakes">-</button>
-
-    <p>Crypto Amount: <span id="cryptoAmount">0.0000</span> XMR</p>
-
-    
     <div id="errorMessage" class="error"></div>
     <div id="successMessage" class="success"></div>
 
     <script>
-        // Constants
         const BOLINGBROOK_LOCATION = {
             lat: 41.6986,
-            lng: -88.0683  // Coordinates for Bolingbrook, IL
+            lng: -88.0683
         };
-        const DELIVERY_RADIUS = 5; // miles - updated to 5 mile radius
-        const PRICES = {
-            pancakes: 5,
-            tamales: 8
-        };
-        const XMR_RATE = 150; // USD to XMR conversion rate
+        const DELIVERY_RADIUS = 5;
+        const PANCAKE_PRICE = 5;
+        const XMR_RATE = 150;
 
-        // Previous state variables and helper functions remain the same
         let pancakeCount = 0;
-        let tamaleCount = 0;
 
-        function updateCounter(product, change) {
-            const maxItems = 20; // Maximum items per product
+        function updateCounter(change) {
+            const maxItems = 20;
+            const newCount = pancakeCount + change;
             
-            if (product === 'pancakes') {
-                const newCount = pancakeCount + change;
-                if (newCount >= 0 && newCount <= maxItems) {
-                    pancakeCount = newCount;
-                    document.getElementById('pancakesCount').innerText = pancakeCount;
-                }
-            } else if (product === 'tamales') {
-                const newCount = tamaleCount + change;
-                if (newCount >= 0 && newCount <= maxItems) {
-                    tamaleCount = newCount;
-                    document.getElementById('tamalesCount').innerText = tamaleCount;
-                }
+            if (newCount >= 0 && newCount <= maxItems) {
+                pancakeCount = newCount;
+                document.getElementById('pancakesCount').innerText = pancakeCount;
+                updateTotalAmount();
             }
-            
-            updateTotalAmount();
         }
 
         function updateTotalAmount() {
-            const total = (pancakeCount * PRICES.pancakes) + (tamaleCount * PRICES.tamales);
+            const total = pancakeCount * PANCAKE_PRICE;
             document.getElementById('totalAmount').innerText = total.toFixed(2);
+            document.getElementById('cryptoAmount').innerText = (total / XMR_RATE).toFixed(4);
         }
 
         function showError(message) {
@@ -162,8 +131,8 @@
         }
 
         function checkLocationAndPlaceOrder() {
-            if (pancakeCount === 0 && tamaleCount === 0) {
-                showError("Please select at least one item to order.");
+            if (pancakeCount === 0) {
+                showError("Please select at least one pancake to order.");
                 return;
             }
 
@@ -184,10 +153,9 @@
                     if (distance <= DELIVERY_RADIUS) {
                         const orderDetails = {
                             pancakes: pancakeCount,
-                            tamales: tamaleCount,
-                            totalAmount: (pancakeCount * PRICES.pancakes) + (tamaleCount * PRICES.tamales),
+                            totalAmount: pancakeCount * PANCAKE_PRICE,
                             userLocation: userLocation,
-                            totalXMR: ((pancakeCount * PRICES.pancakes) + (tamaleCount * PRICES.tamales)) / XMR_RATE,
+                            totalXMR: (pancakeCount * PANCAKE_PRICE) / XMR_RATE,
                             distance: distance.toFixed(2)
                         };
 
@@ -197,27 +165,21 @@
                     }
                 },
                 function(error) {
-                    let errorMsg = "Failed to get your location. ";
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMsg += "Please enable location services.";
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMsg += "Location information unavailable.";
-                            break;
-                        case error.TIMEOUT:
-                            errorMsg += "Location request timed out.";
-                            break;
-                        default:
-                            errorMsg += "An unknown error occurred.";
-                    }
-                    showError(errorMsg);
-                },
-                {
-                    timeout: 10000,
-                    maximumAge: 0
+                    showError("Failed to get your location. Please enable location services.");
                 }
             );
+        }
+
+        function calculateDistance(loc1, loc2) {
+            const R = 3958.8;
+            const dLat = (loc2.lat - loc1.lat) * (Math.PI / 180);
+            const dLng = (loc2.lng - loc1.lng) * (Math.PI / 180);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(loc1.lat * (Math.PI / 180)) * Math.cos(loc2.lat * (Math.PI / 180)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
         }
 
         function submitOrder(orderDetails) {
@@ -238,33 +200,14 @@
             })
             .then(data => {
                 showSuccess('Your order has been placed successfully!');
-                // Reset order counts
                 pancakeCount = 0;
-                tamaleCount = 0;
                 document.getElementById('pancakesCount').innerText = '0';
-                document.getElementById('tamalesCount').innerText = '0';
                 updateTotalAmount();
             })
             .catch(error => {
                 console.error('Error:', error);
                 showError('There was an error placing your order. Please try again.');
             });
-        }
-
-        function calculateDistance(location1, location2) {
-            const R = 3958.8; // Radius of Earth in miles
-            const dLat = toRadians(location2.lat - location1.lat);
-            const dLng = toRadians(location2.lng - location1.lng);
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(toRadians(location1.lat)) * Math.cos(toRadians(location2.lat)) *
-                Math.sin(dLng / 2) * Math.sin(dLng / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c; // Distance in miles
-        }
-
-        function toRadians(degrees) {
-            return degrees * (Math.PI / 180);
         }
     </script>
 </body>
